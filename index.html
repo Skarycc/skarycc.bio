@@ -2,38 +2,391 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
-    <title>Пример сайта</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>skary | bio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            /* Перспектива для 3D-эффекта */
+            perspective: 1000px; 
+        }
+
+        /* Контейнер для падающих звезд */
+        #stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Стиль падающей звезды */
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            background: linear-gradient(-45deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.1) 80%, transparent);
+            animation: shoot linear forwards;
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translateX(0) translateY(0) rotate(-45deg);
+                opacity: 0;
+                width: 0;
+            }
+            10% {
+                opacity: 1;
+                width: 120px;
+            }
+            100% {
+                transform: translateX(-100vw) translateY(100vh) rotate(-45deg);
+                opacity: 0;
+                width: 150px;
+            }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.1; transform: scale(0.8); }
+            100% { opacity: 0.8; transform: scale(1.2); }
+        }
+
+        /* 3D Обертка для карточки */
+        .card-wrapper {
+            position: relative;
+            z-index: 1;
+            transform-style: preserve-3d;
+            /* Плавный возврат в исходное положение, когда мышь уходит */
+            transition: transform 0.5s ease-out;
+        }
+
+        /* Основная карточка */
+        .profile-card {
+            width: 100%;
+            max-width: 480px;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background: rgba(15, 15, 15, 0.7); /* Полупрозрачный фон для читаемости */
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px); /* Размытие фона позади карточки */
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 3D Блик, который двигается за мышью */
+        .glare {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* Элементы карточки (выносим в 3D на разную глубину) */
+        .avatar-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1), 0 0 40px rgba(255, 255, 255, 0.05);
+            border: 2px solid #222;
+            background: #000;
+            transform: translateZ(40px); /* Приподнимаем аватарку */
+            pointer-events: none;
+        }
+
+        .avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            filter: grayscale(100%) contrast(1.2);
+        }
+
+        .name {
+            font-size: 26px;
+            font-weight: 700;
+            color: #5c9ce6;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 5px;
+            transform: translateZ(30px); /* Приподнимаем текст */
+            pointer-events: none;
+        }
+
+        .username {
+            font-size: 16px;
+            color: #5c9ce6;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            transform: translateZ(25px);
+            pointer-events: none;
+        }
+
+        .badges {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #5c9ce6;
+            font-size: 18px;
+            transform: translateZ(20px);
+            pointer-events: none;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #2a3a52, transparent);
+            margin-bottom: 20px;
+            transform: translateZ(10px);
+            pointer-events: none;
+        }
+
+        .bio-text {
+            text-align: left;
+            width: 100%;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #d1d5db;
+            margin-bottom: 30px;
+            transform: translateZ(15px);
+            pointer-events: none;
+        }
+
+        .bio-text ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .bio-text li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+        }
+
+        .bio-text li::before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: #ffffff;
+            font-size: 10px;
+        }
+        
+        .bio-text ul ul {
+            margin-left: 15px;
+            margin-top: 5px;
+        }
+
+        /* Ссылки должны быть кликабельными, возвращаем им pointer-events */
+        .bio-text a {
+            color: #ffffff;
+            text-decoration: underline;
+            text-decoration-color: #555;
+            text-underline-offset: 3px;
+            transition: color 0.2s;
+            pointer-events: auto; 
+        }
+
+        .bio-text a:hover {
+            color: #5c9ce6;
+        }
+
+        .location {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: #5c9ce6;
+            transform: translateZ(20px);
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar { width: 0px; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header class="hero">
-        <!-- Здесь можно разместить фоновое изображение из image_3d4bd7.jpg -->
-    </header>
 
-    <main class="container">
-        <nav class="navbar">
-            <ul>
-                <li>BLOG</li>
-                <li>UPDATES</li>
-                <li>RESOURCES</li>
-                <li>COMMUNITY</li>
-            </ul>
-        </nav>
+    <div id="stars-container"></div>
 
-        <div class="content-wrapper">
-            <section class="main-content">
-                <h1>Заголовок новости</h1>
-                <p>Дата и описание контента...</p>
-            </section>
+    <!-- Обертка для 3D эффекта -->
+    <div class="card-wrapper" id="cardWrapper">
+        <div class="profile-card" id="profileCard">
+            
+            <!-- Блик для 3D эффекта -->
+            <div class="glare" id="glare"></div>
 
-            <aside class="sidebar">
-                <div class="stats">32,387,073</div>
-                <div class="updates-list">
-                    <h3>MAJOR UPDATES</h3>
-                    <!-- Блоки с обновлениями -->
+            <div class="avatar-container">
+                <img src="https://i.pinimg.com/736x/0f/64/4c/0f644c359df205cfb5cf883bd8fd6466.jpg" alt="Avatar">
+            </div>
+
+            <div class="name"> skary <i class="fa-solid fa-snowflake" style="font-size: 20px;"></i></div>
+            <div class="username">@skarycc</div>
+
+            <div class="badges">
+                <span><i class="fa-solid fa-medal"></i></span>
+                <span><i class="fa-solid fa-circle-check"></i></span>
+                <span><i class="fa-solid fa-gem"></i></span>
+                <span><i class="fa-solid fa-certificate"></i></span>
+                <span><i class="fa-solid fa-code"></i></span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="bio-text">
+                <ul>
+                    <li>разработчик биографии <a href="#">skary.cc</a></li>
+                    <li>разработка сайта с 28.10.2026
+                        <ul>
+                            <li>хост сайта <a href="#">Github.io</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div style="text-align: center; margin-top: 15px; font-size: 20px;">
+                    🐾
                 </div>
-            </aside>
+            </div>
+
+            <div class="location">
+                <i class="fa-solid fa-location-dot"></i>
+                <span>Rostov, Rostov-On-Don</span>
+                <i class="fa-solid fa-link" style="font-size: 12px; opacity: 0.7;"></i>
+            </div>
+
         </div>
-    </main>
+    </div>
+
+    <script>
+        // --- ЛОГИКА ПАДАЮЩИХ ЗВЕЗД ---
+        const container = document.getElementById('stars-container');
+
+        function createShootingStar() {
+            const star = document.createElement('div');
+            star.classList.add('shooting-star');
+            const startX = Math.random() * window.innerWidth + (window.innerWidth * 0.2);
+            const startY = Math.random() * (window.innerHeight * 0.5) - 100;
+            star.style.left = `${startX}px`;
+            star.style.top = `${startY}px`;
+            const duration = Math.random() * 1.2 + 0.8;
+            star.style.animationDuration = `${duration}s`;
+            container.appendChild(star);
+            setTimeout(() => { star.remove(); }, duration * 1000);
+        }
+
+        function loopStars() {
+            createShootingStar();
+            const nextStarTime = Math.random() * 600 + 200;
+            setTimeout(loopStars, nextStarTime);
+        }
+        loopStars();
+
+        // Фоновые статичные звезды
+        for(let i = 0; i < 40; i++) {
+            const bgStar = document.createElement('div');
+            bgStar.style.position = 'absolute';
+            bgStar.style.width = '2px';
+            bgStar.style.height = '2px';
+            bgStar.style.background = '#fff';
+            bgStar.style.borderRadius = '50%';
+            bgStar.style.left = `${Math.random() * 100}%`;
+            bgStar.style.top = `${Math.random() * 100}%`;
+            bgStar.style.opacity = Math.random() * 0.5 + 0.1;
+            bgStar.style.animation = `pulse ${Math.random() * 3 + 2}s infinite alternate`;
+            container.appendChild(bgStar);
+        }
+
+        // --- ЛОГИКА 3D КАРТОЧКИ ---
+        const cardWrapper = document.getElementById('cardWrapper');
+        const profileCard = document.getElementById('profileCard');
+        const glare = document.getElementById('glare');
+
+        // Максимальный угол наклона
+        const maxRotation = 15; 
+
+        // Отслеживаем движение мыши по всему экрану
+        document.addEventListener('mousemove', (e) => {
+            // Получаем размеры и позицию карточки
+            const rect = profileCard.getBoundingClientRect();
+            
+            // Вычисляем центр карточки
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            // Вычисляем расстояние от центра до курсора
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+
+            // Насколько далеко курсор от центра (в процентах от половины ширины/высоты)
+            // Ограничиваем значения, чтобы карточка не переворачивалась
+            let percentX = (mouseX - centerX) / (rect.width / 2);
+            let percentY = (mouseY - centerY) / (rect.height / 2);
+
+            // Ограничиваем значения от -1 до 1
+            percentX = Math.max(-1, Math.min(1, percentX));
+            percentY = Math.max(-1, Math.min(1, percentY));
+
+            // Вычисляем углы наклона
+            const rotateX = -percentY * maxRotation; // Инверсия Y для правильного наклона
+            const rotateY = percentX * maxRotation;
+
+            // Применяем 3D трансформацию
+            cardWrapper.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+            // Двигаем блик
+            glare.style.opacity = 1;
+            // Позиция блика в процентах
+            const glareX = (mouseX - rect.left) / rect.width * 100;
+            const glareY = (mouseY - rect.top) / rect.height * 100;
+            glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.15) 0%, transparent 60%)`;
+        });
+
+        // Возврат в исходное положение, когда мышь уходит за пределы карточки
+        document.addEventListener('mouseleave', () => {
+            cardWrapper.style.transform = `rotateX(0deg) rotateY(0deg)`;
+            cardWrapper.style.transition = 'transform 0.5s ease-out';
+            glare.style.opacity = 0;
+        });
+
+        document.addEventListener('mouseenter', () => {
+            cardWrapper.style.transition = 'transform 0.1s ease-out'; // Ускоряем реакцию при входе
+        });
+    </script>
 </body>
 </html>
